@@ -1,0 +1,53 @@
+import os
+import string
+
+from fabric.api import *
+from fabset.openresty import *
+
+
+env.hosts = ['localhost']
+env.user = 'elan'
+env.password = 'elans2win'
+
+name = 'blobserve'
+version = '0.1.0' 
+deploydir = '/opt/space/blobserve' 
+openresty_pkg = 'http://agentzh.org/misc/nginx/ngx_openresty-1.2.4.14.tar.gz'
+
+
+installdir = '%s/%s-%s' % (deploydir, name, version)
+openrestydir = '%s/openresty' % installdir
+
+def install():
+	run('mkdir -p %s' % deploydir)
+	run('rm -rf %s' % installdir)
+	run('mkdir -p %s' % installdir)
+
+	install_openresty(openrestydir, openresty_pkg)
+
+        put('conf', installdir)
+        put('lua', installdir)
+	run('rm -f %s/nginx/conf/nginx.conf' % openrestydir)
+	run('ln -s %s/conf/nginx.conf %s/nginx/conf/nginx.conf' % (installdir, openrestydir))
+	run('ln -s %s/lua %s/nginx/lua' % (installdir, openrestydir))
+	
+def upgrade():
+	run('rm -rf %s/conf' % installdir)
+	run('rm -rf %s/lua' % installdir)
+        put('conf', installdir)
+        put('lua', installdir)
+	run('rm -f %s/nginx/conf/nginx.conf' % openrestydir)
+	run('rm -f %s/nginx/lua' % openrestydir)
+	run('ln -s %s/conf/nginx.conf %s/nginx/conf/nginx.conf' % (installdir, openrestydir))
+	run('ln -s %s/lua %s/nginx/lua' % (installdir, openrestydir))
+	
+def start():
+	run('env HOME=%s %s/nginx/sbin/nginx' % (installdir, openrestydir))
+
+def restart():
+	run('env HOME=%s %s/nginx/sbin/nginx -s reload' % (installdir, openrestydir))
+
+def stop():
+	run('env HOME=%s %s/nginx/sbin/nginx -s stop' % (installdir, openrestydir))
+
+
