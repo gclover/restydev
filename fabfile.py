@@ -27,7 +27,7 @@ def install(dest, resty=True, module=True):
 
 	luaconf = '--with-luajit' if resty is True else ''
 	moduleconf = ''
-	if module:
+	if module is True:
 		moduleconf = '--with-ld-opt="-lstdc++" '	
 		modules = glob.glob('src/cpp/*')
 		for dir in modules:
